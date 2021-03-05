@@ -17,9 +17,10 @@ def main(args):
         current_screen = agent.env.get_screen()
         state = current_screen - last_screen
         for t in count():
-            action = agent.select_action()
-            _, reward, done, _ = agent.env(action.item())
-            reward = torch.tensor([reward], device=device)
+            action = agent.select_action(state)
+
+            _, reward, done, _ = agent.env.env.step(action.item())
+            reward = torch.tensor([reward], device=args.device)
             last_screen = current_screen
             current_screen = agent.env.get_screen()
             if not done:
@@ -29,10 +30,16 @@ def main(args):
             agent.memory.push(state, action, next_state, reward)
             state = next_state
             agent.optimize()
+
             if done:
                 episode_durations.append(t+1)
+                break
+            else:
+                print(f"Episode ## {i+1} ##, duration ## {t+1} ## survive")
         if i % args.target_update == 0:
             agent.target_net.load_state_dict(agent.policy_net.state_dict())
+
+    agent.env.close()
 
 
 if __name__ == "__main__":

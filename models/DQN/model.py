@@ -8,7 +8,6 @@ import torchvision
 from models.Parameters import args
 from models.DQN.environment import Environment, Games
 import random
-import numpy as np
 from utils.ReplayMemory import *
 
 
@@ -29,7 +28,7 @@ class Net(nn.Module):
         self.bn3 = nn.BatchNorm2d(32)
 
         # calculate the output size after the Conv operations
-        def conv2_size_out(original_size, kernal_size, stride):
+        def conv2_size_out(original_size, kernal_size=5, stride=2):
             return (original_size - kernal_size) // stride + 1
 
         height_after_conv = conv2_size_out(conv2_size_out(conv2_size_out(height)))
@@ -90,6 +89,8 @@ class DQN(object):
 
     def optimize(self):
         # see https://stackoverflow.com/a/19343/3343043
+        if len(self.memory) < self.batch_size:
+            return
         transitions = self.memory.sample(self.batch_size)
         batch = Transition(*zip(*transitions))
         # creat masks

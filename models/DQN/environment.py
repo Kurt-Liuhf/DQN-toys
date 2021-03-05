@@ -20,12 +20,13 @@ class Environment(object):
 
     def __init__(self, game_name):
         self.game_name = game_name
-        self.env = gym.make(game_name).unwrapped
+        self.env = gym.make('CartPole-v0').unwrapped
+        self.reset()
         self.num_state = self.env.observation_space.shape[0]
         self.num_action = self.env.action_space.n
 
     def get_cart_location(self, screen_width):
-        world_width = self.env.x_thredshold * 2
+        world_width = self.env.x_threshold * 2
         scale = screen_width / world_width
         return int(self.env.state[0] * scale + screen_width / 2.0)
 
@@ -55,6 +56,12 @@ class Environment(object):
         screen = torch.from_numpy(screen)
 
         return screen.unsqueeze(0).to(args.device)
+
+    def reset(self):
+        self.env.reset()
+
+    def close(self):
+        self.env.close()
 
 
 if __name__ == '__main__':
