@@ -1,12 +1,22 @@
 from models.Parameters import *
 from itertools import count
 from models.DQN.model import DQN
-
-
+from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
 Games = ['CartPole', 'MountainCar-v0']
+
+def draw_duration(durations):
+    fig, ax = plt.subplots(figsize=(12, 6), dpi=100)
+    x = [i+1 for i in range(len(durations))]
+    y = durations
+    ax.plot(x, y)
+    ax.set_xlabel("episode")
+    ax.set_ylabel("duration")
+    plt.show()
 
 
 def main(args):
+    # SummaryWriter(log_dir='logs')
     agent = DQN(args.game, args.gamma, args.batch_size,
                 args.eps_start, args.eps_end, args.eps_decay,
                 args.mem_size, args.device)
@@ -40,7 +50,9 @@ def main(args):
             agent.target_net.load_state_dict(agent.policy_net.state_dict())
 
     agent.env.close()
+    return episode_durations
 
 
 if __name__ == "__main__":
-    main(args)
+    durations = main(args)
+    draw_duration(durations)
