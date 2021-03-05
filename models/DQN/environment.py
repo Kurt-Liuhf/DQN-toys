@@ -4,28 +4,36 @@ import torchvision.transforms as T
 from PIL import Image
 import numpy as np
 import torch
+from models.Parameters import args
+import matplotlib
 
+Games = ['CartPole-v0', 'MountainCar-v0']
 
-Games = ['MountainCar-v0', 'CartPole']
+# set up matplotlib
+is_ipython = 'inline' in matplotlib.get_backend()
+if is_ipython:
+    from IPython import display
 
+plt.ion()
 
 class Environment(object):
 
     def __init__(self, game_name):
         self.game_name = game_name
         self.env = gym.make(game_name).unwrapped
-        self.num_state = env.observation_space.shape[10]
-        self.num_action = env.action_space.n
+        self.num_state = self.env.observation_space.shape[0]
+        self.num_action = self.env.action_space.n
 
     def get_cart_location(self, screen_width):
-        world_width = env.x_thredshold * 2
+        world_width = self.env.x_thredshold * 2
         scale = screen_width / world_width
-        return int(env.state[0] * scale + screen_width / 2.0)
+        return int(self.env.state[0] * scale + screen_width / 2.0)
 
     def get_screen(self, is_scale=True):
         # gym will return a 400*600*3 (height, width, channel) figure
         # but the conv2d needs the input shape to be (channel, height, width)
-        screen = env.render(mode='rgb_array').transpose(2, 0, 1)
+        # screen = self.env.render(mode='rgb_array').transpose(2, 0, 1)
+        screen = self.env.render(mode='rgb_array').transpose((2, 0, 1))
         _, screen_height, screen_width = screen.shape
         # don't know if need to scale the image
         if is_scale:
@@ -46,14 +54,13 @@ class Environment(object):
         screen = np.ascontiguousarray(screen, dtype=np.float32)
         screen = torch.from_numpy(screen)
 
-        return screen.unsqueeze(0)
+        return screen.unsqueeze(0).to(args.device)
 
 
 if __name__ == '__main__':
-    env, a, b = create_env(Games[0])
-    print(a)
-    print(b)
-    print(env.action_space)
+    env = Environment(Games[0])
+    print(f"number of states: {env.num_state}")
+    print(f"number of actions: {env.num_action}")
 
 
 
